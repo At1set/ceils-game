@@ -1,7 +1,7 @@
 import Point from "./Point.js"
 
 export default class GameObject {
-  constructor(x, y) {
+  constructor(x = null, y = null) {
     this.isPlaced = false
     this.position = new Point(x, y)
   }
@@ -17,6 +17,7 @@ export default class GameObject {
 
   draw(ctx, camera, gridSize) {
     const isDrawPreview = !this.isPlaced
+    if (this.position.x === null || this.position.y === null) return
 
     if (isDrawPreview) ctx.globalAlpha = 0.5
     const posWithOffset = camera.withOffset(this.position)

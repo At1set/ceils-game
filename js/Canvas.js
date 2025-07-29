@@ -15,6 +15,7 @@ export default class Canvas {
     this.drawPreview()
     this.drawObjects()
     this.restoreTransform()
+    this.drawFPS()
   }
 
   clear() {
@@ -73,5 +74,18 @@ export default class Canvas {
     const { player, camera, gridSize } = this.globals
     if (!player.selectedItem) return
     player.selectedItem.draw(ctx, camera, gridSize)
+  }
+
+  drawFPS() {
+    const { ctx, width } = this
+    const fps = this.globals.fps ?? 0
+
+    ctx.save()
+    ctx.resetTransform() // Сброс трансформации, чтобы текст был в экранных координатах
+    ctx.font = "12px sans-serif"
+    ctx.fillStyle = "gray"
+    ctx.textAlign = "right"
+    ctx.fillText(`FPS: ${fps}`, width - 10, 20)
+    ctx.restore()
   }
 }

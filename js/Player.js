@@ -3,7 +3,7 @@ import Point from "./Point.js"
 
 export default class Player {
   constructor(globals) {
-    this.selectedItem = new GameObject(0, 0)
+    this.selectedItem = new GameObject()
     this.globals = globals
   }
 
