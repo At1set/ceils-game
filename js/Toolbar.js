@@ -1,4 +1,5 @@
 import GameObject from "./GameObject.js"
+import Cleaner from "./Placement/Cleaner.js"
 
 export default class Toolbar {
   constructor(toolbar, globals) {
@@ -18,12 +19,15 @@ export default class Toolbar {
 
     toolbar.addEventListener("click", (e) => {
       const clickedSlot = e.target.closest(".slot")
+      if (!clickedSlot) return
       const allSlots = Array.from(toolbar.querySelectorAll(".slot"))
       allSlots.forEach((slot) => slot.classList.remove("_active"))
       clickedSlot.classList.add("_active")
       if (clickedSlot === allSlots[0])
         this.globals.player.selectedItem = new GameObject()
-      else this.globals.player.selectedItem = null
+      else if (clickedSlot === allSlots[1]) {
+        this.globals.player.selectedItem = new Cleaner()
+      } else this.globals.player.selectedItem = null
     })
   }
 }

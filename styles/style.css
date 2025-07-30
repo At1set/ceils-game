@@ -46,6 +46,11 @@
   transition: padding 0.3s ease 0s;
 }
 
+.slot img {
+  display: block;
+  width: 100%;
+}
+
 .slot._active {
   padding: 14px;
   border: 2px solid rgb(139, 139, 139);

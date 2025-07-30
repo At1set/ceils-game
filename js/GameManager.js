@@ -4,6 +4,7 @@ import Canvas from "./Canvas.js"
 import GameField from "./GameField.js"
 import Player from "./Player.js"
 import Toolbar from "./Toolbar.js"
+import Cleaner from "./Placement/Cleaner.js"
 
 export default class GameManager {
   globals = {}
@@ -82,7 +83,8 @@ export default class GameManager {
       )
         return
 
-      player.placeItem(e)
+      if (player.selectedItem instanceof Cleaner) player.removeItem(e)
+      else player.placeItem(e)
     })
 
     window.addEventListener("wheel", (e) => {
