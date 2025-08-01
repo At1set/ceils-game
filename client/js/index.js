@@ -7,7 +7,7 @@ window.onload = () => {
   canvas.height = window.document.body.clientHeight
 
   const gameManager = new GameManager(canvas, toolbar)
-  gameManager.init().setupGlobalEventListeners().startGameLoop()
+  gameManager.init().startGameLoop()
 
   const customCursor = document.getElementById("custom-cursor")
   window.addEventListener("mousemove", (e) => {

@@ -30,12 +30,11 @@ export default class GameManager {
     this.inputController = new InputController()
     this.inputController.setupEventListeners(canvas)
 
-    this.canvasController = new Canvas(canvas, gridSize)
-
     this.toolbar = new Toolbar(toolbar)
-    this.toolbar.setupEventListeners()
+    this.toolbar.setupEventListeners(canvas)
 
     this.camera = new Camera(initialScale)
+    this.canvasController = new Canvas(canvas, gridSize)
     this.gameField = new GameField()
     this.player = new Player()
   }

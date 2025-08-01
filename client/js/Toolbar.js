@@ -20,10 +20,10 @@ export default class Toolbar extends EventEmitter {
     return Instance
   }
 
-  setupEventListeners() {
+  setupEventListeners(canvas) {
     const { toolbar } = this
 
-    const slotSize = Canvas.getInstance().canvas.height / 10
+    const slotSize = canvas.height / 10
     toolbar.style.width = slotSize + "px"
     Array.from(toolbar.querySelectorAll(".slot")).forEach((slot) => {
       slot.style.width = slotSize - 2.2 + "px"
