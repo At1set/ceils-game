@@ -1,11 +1,41 @@
-import Point from "./Point.js"
+import Canvas from "./Canvas.js"
+import InputController from "./InputController.js"
+import Point from "./utils/Point.js"
+
+let Instance = null
 
 export default class Camera {
-  constructor(gridSize, startScale, globals) {
+  constructor(startScale) {
+    if (Instance) return Instance
+
     this.scale = startScale
-    this.offset = new Point(0, 0)
-    this.gridSize = gridSize
-    this.globals = globals
+    this.position = new Point(0, 0)
+    this.lastPosition = new Point()
+    this.startDragPoint = new Point()
+
+    Instance = this
+
+    const inputController = InputController.getInstance()
+
+    inputController.on("camera.dragStart", (point) => {
+      this.startDragPoint = point
+      this.lastPosition = this.position.clone()
+    })
+
+    inputController.on("camera.dragging", (e) => {
+      const dx = e.clientX - this.startDragPoint.x
+      const dy = e.clientY - this.startDragPoint.y
+
+      this.position.x = this.lastPosition.x + dx / this.scale
+      this.position.y = this.lastPosition.y + dy / this.scale
+    })
+
+    inputController.on("camera.zoom", this.zoom.bind(this))
+  }
+
+  static getInstance() {
+    if (!Instance) throw new Error("Camera not initialized yet!")
+    return Instance
   }
 
   zoom(deltaY) {
@@ -28,13 +58,13 @@ export default class Camera {
    */
   screenToWorld(point) {
     this.#validatePoint(point)
-    const { canvas } = this.globals
+    const canvas = Canvas.getInstance()
 
     const cx = canvas.width / 2
     const cy = canvas.height / 2
 
-    const worldX = (point.x - cx) / this.scale + cx - this.offset.x
-    const worldY = (point.y - cy) / this.scale + cy - this.offset.y
+    const worldX = (point.x - cx) / this.scale + cx - this.position.x
+    const worldY = (point.y - cy) / this.scale + cy - this.position.y
 
     return new Point(worldX, worldY)
   }
@@ -56,9 +86,11 @@ export default class Camera {
    * @returns {Point}
    */
   worldToCeil(point) {
+    const gridSize = Canvas.getInstance().gridSize
+
     this.#validatePoint(point)
-    const ceilX = Math.floor(point.x / this.gridSize)
-    const ceilY = Math.floor(point.y / this.gridSize)
+    const ceilX = Math.floor(point.x / gridSize)
+    const ceilY = Math.floor(point.y / gridSize)
     return new Point(ceilX, ceilY)
   }
 
@@ -69,13 +101,13 @@ export default class Camera {
    */
   worldToScreen(point) {
     this.#validatePoint(point)
-    const { canvas } = this.globals
+    const canvas = Canvas.getInstance()
 
     const cx = canvas.width / 2
     const cy = canvas.height / 2
 
-    const screenX = (point.x + this.offset.x - cx) * this.scale + cx
-    const screenY = (point.y + this.offset.y - cy) * this.scale + cy
+    const screenX = (point.x + this.position.x - cx) * this.scale + cx
+    const screenY = (point.y + this.position.y - cy) * this.scale + cy
 
     return new Point(screenX, screenY)
   }
@@ -86,9 +118,11 @@ export default class Camera {
    * @returns {Point}
    */
   ceilToWorld(point) {
+    const gridSize = Canvas.getInstance().gridSize
+
     this.#validatePoint(point)
-    const worldX = point.x * this.gridSize
-    const worldY = point.y * this.gridSize
+    const worldX = point.x * gridSize
+    const worldY = point.y * gridSize
     return new Point(worldX, worldY)
   }
 
@@ -104,6 +138,6 @@ export default class Camera {
   }
 
   withOffset(point) {
-    return new Point(point.x + this.offset.x, point.y + this.offset.y)
+    return new Point(point.x + this.position.x, point.y + this.position.y)
   }
 }

@@ -1,8 +1,19 @@
 import GameObject from "./GameObject.js"
 
+let Instance = null
+
 export default class GameField {
   constructor() {
+    if (Instance) return Instance
+
     this.occupiedCells = new Map()
+
+    Instance = this
+  }
+
+  static getInstance() {
+    if (!Instance) throw new Error("GameField not initialized yet!")
+    return Instance
   }
 
   #key(point) {

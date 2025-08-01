@@ -1,16 +1,29 @@
+import Canvas from "./Canvas.js"
 import GameObject from "./GameObject.js"
 import Cleaner from "./Placement/Cleaner.js"
+import EventEmitter from "./utils/EventEmitter.js"
 
-export default class Toolbar {
-  constructor(toolbar, globals) {
+let Instance = null
+
+export default class Toolbar extends EventEmitter {
+  constructor(toolbar) {
+    super()
+    if (Instance) return Instance
+
     this.toolbar = toolbar
-    this.globals = globals
+
+    Instance = this
   }
 
-  init() {
+  static getInstance() {
+    if (!Instance) throw new Error("Toolbar not initialized yet!")
+    return Instance
+  }
+
+  setupEventListeners() {
     const { toolbar } = this
 
-    const slotSize = this.globals.canvas.height / 10
+    const slotSize = Canvas.getInstance().canvas.height / 10
     toolbar.style.width = slotSize + "px"
     Array.from(toolbar.querySelectorAll(".slot")).forEach((slot) => {
       slot.style.width = slotSize - 2.2 + "px"
@@ -24,10 +37,10 @@ export default class Toolbar {
       allSlots.forEach((slot) => slot.classList.remove("_active"))
       clickedSlot.classList.add("_active")
       if (clickedSlot === allSlots[0])
-        this.globals.player.selectedItem = new GameObject()
-      else if (clickedSlot === allSlots[1]) {
-        this.globals.player.selectedItem = new Cleaner()
-      } else this.globals.player.selectedItem = null
+        this.emit("item.switch", new GameObject())
+      else if (clickedSlot === allSlots[1])
+        this.emit("item.switch", new Cleaner())
+      else this.emit("item.switch", null)
     })
   }
 }
