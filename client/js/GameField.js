@@ -1,4 +1,4 @@
-import GameObject from "./GameObject.js"
+import GameObject from "./Placement/GameObject.js"
 
 let Instance = null
 

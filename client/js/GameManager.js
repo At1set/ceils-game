@@ -5,6 +5,8 @@ import GameField from "./GameField.js"
 import InputController from "./InputController.js"
 import Player from "./Player.js"
 import Toolbar from "./Toolbar.js"
+import GameObject from "./Placement/GameObject.js"
+import SelectTool from "./Tools/Select.js"
 
 export default class GameManager {
   constructor(canvas) {
@@ -19,7 +21,7 @@ export default class GameManager {
   init() {
     this.setupGlobals()
     this.setupGlobalEventListeners()
-    this.canvasController.update()
+    this.canvasController.render()
     return this
   }
 
@@ -36,19 +38,25 @@ export default class GameManager {
     this.camera = new Camera(initialScale)
     this.canvasController = new Canvas(canvas, gridSize)
     this.gameField = new GameField()
-    this.player = new Player()
+    this.player = new Player(new GameObject())
   }
 
   setupGlobalEventListeners() {
-    const { inputController, camera, canvasController } = this
+    const { inputController, camera, canvasController, player } = this
 
-    inputController.on("click", (e) => {
+    inputController.on("mouse.click", (e) => {
       const isMoved =
         camera.lastPosition.x !== camera.position.x ||
         camera.lastPosition.y !== camera.position.y
       if (isMoved) return
 
       inputController.emit("player.action", e)
+    })
+
+    inputController.on("mouse.move", ({ event, state }) => {
+      const playerWithSelectTool = player.selectedTool instanceof SelectTool
+      if (playerWithSelectTool || !state.isDragging) return
+      inputController.emit("camera.dragging", event)
     })
 
     this.events.on("fps.changed", (newFps) => (canvasController.fps = newFps))
@@ -69,7 +77,7 @@ export default class GameManager {
         this.lastFpsUpdate = timestamp
       }
 
-      this.canvasController.update()
+      this.canvasController.render()
       requestAnimationFrame(loop)
     }
 

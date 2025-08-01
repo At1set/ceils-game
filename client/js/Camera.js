@@ -4,7 +4,18 @@ import Point from "./utils/Point.js"
 
 let Instance = null
 
+/**
+ * Отвечает за положение видимой части игрового поля на экране, а также за зум.
+ *
+ * Имеет методы, необходимые для получения координат игрового поля
+ */
 export default class Camera {
+  /**
+   * Создает/возвращает объект камеры
+   * @param {number} startScale Начальный зум
+   * @returns {Camera}
+   */
+
   constructor(startScale) {
     if (Instance) return Instance
 
@@ -38,8 +49,12 @@ export default class Camera {
     return Instance
   }
 
+  /**
+   * Изменение зума камеры при прокрутке колесика
+   * @param {number} deltaY
+   */
   zoom(deltaY) {
-    if (deltaY < 0) {
+    if (deltaY > 0) {
       this.scale = Math.max(1, this.scale - 0.1)
     } else {
       this.scale = Math.min(5, this.scale + 0.1)
@@ -52,9 +67,9 @@ export default class Camera {
   }
 
   /**
-   * Получение мировых координат из координат экрана
-   * @param {Point} point
-   * @returns {Point}
+   * Получение мировых координат из координат на экране
+   * @param {Point} point screenpoint
+   * @returns {Point} worldpoint
    */
   screenToWorld(point) {
     this.#validatePoint(point)
@@ -71,8 +86,8 @@ export default class Camera {
 
   /**
    * Получение координат клетки по экранным координатам
-   * @param {Point} point
-   * @returns {Point}
+   * @param {Point} point screenpoint
+   * @returns {Point} gridpoint
    */
   screenToCeil(point) {
     this.#validatePoint(point)
@@ -82,8 +97,8 @@ export default class Camera {
 
   /**
    * Получение координат клетки по мировым координатам
-   * @param {Point} point
-   * @returns {Point}
+   * @param {Point} point worldpoint
+   * @returns {Point} gridpoint
    */
   worldToCeil(point) {
     const gridSize = Canvas.getInstance().gridSize
@@ -96,8 +111,9 @@ export default class Camera {
 
   /**
    * Преобразование из мировых координат в экранные
-   * @param {Point} point
-   * @returns {Point}
+   * @param {Point} point worldpoint
+   * @returns {Point} screenpoint
+   * @deprecated Метод не нужен из-за неправильной работы.
    */
   worldToScreen(point) {
     this.#validatePoint(point)
@@ -114,8 +130,8 @@ export default class Camera {
 
   /**
    * Получение мировых координат из координат клетки
-   * @param {Point} point
-   * @returns {Point}
+   * @param {Point} point gridpoint
+   * @returns {Point} worldpoint
    */
   ceilToWorld(point) {
     const gridSize = Canvas.getInstance().gridSize
@@ -128,8 +144,9 @@ export default class Camera {
 
   /**
    * Получение экранных координат из координат клетки
-   * @param {Point} point
-   * @returns {Point}
+   * @param {Point} point gridpoint
+   * @returns {Point} screenpoint
+   * @deprecated Метод не нужен из-за неправильной работы.
    */
   ceilToScreen(point) {
     this.#validatePoint(point)
@@ -137,6 +154,11 @@ export default class Camera {
     return this.worldToScreen(worldPoint)
   }
 
+  /**
+   * Получение актуальных мировых координат, учитывая позицию камеры
+   * @param {Point} point worldpoint
+   * @returns {Point} worldpoint
+   */
   withOffset(point) {
     return new Point(point.x + this.position.x, point.y + this.position.y)
   }

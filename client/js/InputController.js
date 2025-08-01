@@ -8,7 +8,9 @@ export default class InputController extends EventEmitter {
     super()
     if (Instance) return Instance
 
-    this.isDragging = false
+    this.state = {
+      isDragging: false,
+    }
 
     Instance = this
   }
@@ -20,24 +22,21 @@ export default class InputController extends EventEmitter {
 
   setupEventListeners(canvas) {
     canvas.addEventListener("mousedown", (e) => {
-      this.isDragging = true
+      this.state.isDragging = true
       const startDragPoint = new Point(e.clientX, e.clientY)
       this.emit("camera.dragStart", startDragPoint)
     })
 
     window.addEventListener("mouseup", (e) => {
-      this.isDragging = false
+      this.state.isDragging = false
     })
 
     window.addEventListener("mousemove", (e) => {
-      if (this.isDragging) {
-        return this.emit("camera.dragging", e)
-      }
-      this.emit("player.move", e)
+      this.emit("mouse.move", { event: e, state: this.state })
     })
 
     canvas.addEventListener("click", (e) => {
-      this.emit("click", e)
+      this.emit("mouse.click", e)
     })
 
     window.addEventListener("wheel", (e) => {

@@ -4,6 +4,9 @@ import Player from "./Player.js"
 
 let Instance = null
 
+/**
+ * Выполняет роль отрисовки графики игры
+ */
 export default class Canvas {
   constructor(canvas, gridSize) {
     if (Instance) return Instance
@@ -23,21 +26,34 @@ export default class Canvas {
     return Instance
   }
 
-  update() {
+  /**
+   * Отрисовать кадр игры
+   */
+  render() {
     this.clear()
     this.applyTransform()
+
     this.drawGrid()
+    this.drawTool()
     this.drawPreview()
     this.drawObjects()
+
     this.restoreTransform()
+
     this.drawFPS()
   }
 
+  /**
+   * Очистить канвас
+   */
   clear() {
     const { ctx, width, height } = this
     ctx.clearRect(0, 0, width, height)
   }
 
+  /**
+   * Применить приближение камеры к канвасу
+   */
   applyTransform() {
     const { ctx, canvas } = this
     const scale = Camera.getInstance().scale
@@ -51,10 +67,16 @@ export default class Canvas {
     ctx.translate(-width / 2, -height / 2)
   }
 
+  /**
+   * Восстанавливает настройки канваса после приближения камеры
+   */
   restoreTransform() {
     this.ctx.restore()
   }
 
+  /**
+   * Отрисовка игровой сетки
+   */
   drawGrid() {
     const camera = Camera.getInstance()
     const { ctx, width, height, gridSize } = this
@@ -76,6 +98,9 @@ export default class Canvas {
     }
   }
 
+  /**
+   * Отрисовка всех объектов, установленных на поле
+   */
   drawObjects() {
     const { ctx, gridSize } = this
     const gameField = GameField.getInstance()
@@ -86,15 +111,27 @@ export default class Canvas {
     )
   }
 
+  /**
+   * Отрисовка выбранного предмета у Player
+   */
   drawPreview() {
     const { ctx, gridSize } = this
     const player = Player.getInstance()
-    const camera = Camera.getInstance()
+    if (!player.selectedItem || player.selectedTool) return
 
-    if (!player.selectedItem) return
+    const camera = Camera.getInstance()
     player.selectedItem.draw(ctx, camera, gridSize)
   }
 
+  drawTool() {
+    const { ctx } = this
+    const player = Player.getInstance()
+    return player.selectedTool?.draw?.(ctx)
+  }
+
+  /**
+   * Отрисовка фпс
+   */
   drawFPS() {
     const { ctx, width } = this
 
