@@ -1,5 +1,5 @@
 import Block from "./Placement/Block.js"
-import Cleaner from "./Placement/Cleaner.js"
+import Cleaner from "./Tools/Cleaner.js"
 import SelectTool from "./Tools/Select.js"
 import EventEmitter from "./utils/EventEmitter.js"
 
@@ -39,7 +39,7 @@ export default class Toolbar extends EventEmitter {
 
       if (clickedSlot === allSlots[0]) this.emit("item.switch", new Block())
       else if (clickedSlot === allSlots[1])
-        this.emit("item.switch", new Cleaner())
+        this.emit("tool.switch", new Cleaner())
       else if (clickedSlot === allSlots[2])
         this.emit("tool.switch", new SelectTool())
       else this.emit("item.switch", null)

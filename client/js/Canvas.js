@@ -34,9 +34,9 @@ export default class Canvas {
     this.applyTransform()
 
     this.drawGrid()
-    this.drawTool()
-    this.drawPreview()
     this.drawObjects()
+    this.drawSelectedItem()
+    this.drawSelectedTool()
 
     this.restoreTransform()
 
@@ -114,19 +114,22 @@ export default class Canvas {
   /**
    * Отрисовка выбранного предмета у Player
    */
-  drawPreview() {
-    const { ctx, gridSize } = this
+  drawSelectedItem() {
     const player = Player.getInstance()
-    if (!player.selectedItem || player.selectedTool) return
+    if (!player.selectedItem) return
 
+    const { ctx, gridSize } = this
     const camera = Camera.getInstance()
     player.selectedItem.draw(ctx, camera, gridSize)
   }
 
-  drawTool() {
-    const { ctx } = this
+  drawSelectedTool() {
     const player = Player.getInstance()
-    return player.selectedTool?.draw?.(ctx)
+    if (!player.selectedTool) return
+
+    const { ctx, gridSize } = this
+    const camera = Camera.getInstance()
+    return player.selectedTool.draw(ctx, camera, gridSize)
   }
 
   /**

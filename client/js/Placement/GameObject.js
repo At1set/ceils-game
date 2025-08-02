@@ -21,18 +21,28 @@ export default class GameObject {
 
   clone() {}
 
-  onBlockLeaving(block) {
-    block.state = States.default
-    block.drawOptions = null
+  onBlockLeave(block) {
+    // console.log("the block:", block, "has leaved from me")
+    this.state = States.default
+    this.drawOptions = null
   }
 
-  onEnterOnBlock(block) {
-    block.onBlockHover(block)
-    this.state = States.itemHover
+  onBlockEnter(block) {
+    this.state = States.itemOnTop
+    // Тут можно менять например отображение для текущего состояния this.drawOptions
+  }
+
+  movedOnNextBlock(from, to) {
+    // console.log("entering on the block:", to, "from:", from)
+    if (from) from.onBlockLeave(this)
+    if (to) to.onBlockEnter(this)
+    this.onBlockHover(to)
   }
 
   onBlockHover(block) {
-    this.state = States.itemOnTop
+    // console.log("hovering on the block:", block)
+    if (!block) return (this.state = States.default)
+    this.state = States.itemHover
   }
 
   move(point) {

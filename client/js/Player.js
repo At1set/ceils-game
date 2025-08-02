@@ -1,11 +1,9 @@
 import Camera from "./Camera.js"
 import GameField from "./GameField.js"
-import GameObject from "./Placement//GameObject.js"
 import InputController from "./InputController.js"
-import Cleaner from "./Placement/Cleaner.js"
+import Cleaner from "./Tools/Cleaner.js"
 import Point from "./utils/Point.js"
 import Toolbar from "./Toolbar.js"
-import { States } from "./Placement/GameObject.js"
 
 let Instance = null
 
@@ -22,15 +20,14 @@ export default class Player {
     const inputController = InputController.getInstance()
     const toolbar = Toolbar.getInstance()
 
-    inputController.on("mouse.move", (data) => {
-      this.onMouseMove(data)
-      this.selectedItem?.onMouseMove?.(data)
-    })
+    inputController.on("mouse.move", this.onMouseMove.bind(this))
 
     inputController.on("player.action", (e) => {
-      if (this.selectedItem instanceof Cleaner) this.removeItem(e)
+      if (this.selectedTool instanceof Cleaner) this.removeItem(e)
       else this.placeItem(e)
     })
+
+    inputController.on("camera.zoom", this.onMouseMove.bind(this))
 
     toolbar.on("item.switch", this.setSelectedItem.bind(this))
     toolbar.on("tool.switch", this.setSelectedTool.bind(this))
@@ -54,22 +51,26 @@ export default class Player {
     if (!tool) this.selectedTool = null
 
     if (!(this.selectedTool instanceof tool.constructor)) {
+      this.selectedTool?.delete?.()
       this.selectedTool = tool
+      this.selectedItem = null
     }
   }
 
-  onMouseMove({ event: e, state }) {
+  onMouseMove(data) {
+    const { event: e, state } = data
     const { selectedItem, selectedTool } = this
-    if (!selectedItem || state.isDragging) return
+    selectedTool?.onMouseMove?.(data)
+    if (state.isDragging) return
 
     const camera = Camera.getInstance()
 
     const mousePoint = new Point(e.clientX, e.clientY)
     const ceilPos = camera.screenToCeil(mousePoint)
     const worldPos = camera.ceilToWorld(ceilPos)
-    selectedItem.move(worldPos)
+    selectedItem?.move?.(worldPos)
 
-    if (!selectedTool) this.updateItemCeil(worldPos)
+    this.updateItemCeil(worldPos)
   }
 
   updateItemCeil(ceilPosition) {
@@ -81,15 +82,10 @@ export default class Player {
     // Player по-прежнемму остается на текущей клетке
     if (this.lastItemCeil === itemCeil) return
 
-    // Player уходит с блока мышью
-    if (this.lastItemCeil) {
-      this.selectedItem?.onBlockLeaving?.(this.lastItemCeil)
-    }
+    // Player уходит с блока мышью на другой блок
+    this.selectedTool?.movedOnNextBlock?.(this.lastItemCeil, itemCeil)
+    this.selectedItem?.movedOnNextBlock?.(this.lastItemCeil, itemCeil)
 
-    // Player перешел мышью на новый блок
-    if (itemCeil && itemCeil.state !== States.selected) {
-      this.selectedItem.onEnterOnBlock(itemCeil)
-    }
     this.lastItemCeil = itemCeil
   }
 
@@ -120,5 +116,6 @@ export default class Player {
     const worldPos = camera.ceilToWorld(ceilPos)
 
     gameField.removeObjectAt(worldPos)
+    this.updateItemCeil(worldPos)
   }
 }

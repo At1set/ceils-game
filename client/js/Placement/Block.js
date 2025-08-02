@@ -38,21 +38,6 @@ export default class Block extends GameObject {
     return this.drawOptions?.[key] ?? defaultDrawOptions[type]?.[key]
   }
 
-  draw(ctx, camera, gridSize) {
-    if (this.position.isNull()) return
-
-    const isSelected = this.isPlaced && this.state === States.selected
-    if (isSelected) return this.drawSelected(ctx, camera, gridSize)
-
-    const isItemOver = this.isPlaced && this.state === States.itemOnTop
-    if (isItemOver) return this.drawItemOver(ctx, camera, gridSize)
-
-    const isDrawDefault = this.isPlaced && this.state === States.default
-    if (isDrawDefault) return this.drawDefault(ctx, camera, gridSize)
-
-    return this.drawPreview(ctx, camera, gridSize)
-  }
-
   drawDefault(ctx, camera, gridSize) {
     ctx.save()
     const posWithOffset = camera.withOffset(this.position)
@@ -82,24 +67,22 @@ export default class Block extends GameObject {
 
   drawItemOnTop(ctx, camera, gridSize) {
     this.drawDefault(ctx, camera, gridSize)
+  }
 
+  drawItemHover(ctx, camera, gridSize) {
     ctx.save()
     const posWithOffset = camera.withOffset(this.position)
 
     // Применение стилей
-    ctx.globalAlpha = this.#getDrawOption("itemOnTop", "globalAlpha")
-    ctx.fillStyle = this.#getDrawOption("itemOnTop", "fillStyle")
-    ctx.strokeStyle = this.#getDrawOption("itemOnTop", "strokeStyle")
+    ctx.fillStyle = this.#getDrawOption("itemHover", "fillStyle")
+    ctx.strokeStyle = this.#getDrawOption("itemHover", "strokeStyle")
+    ctx.globalAlpha = this.#getDrawOption("itemHover", "globalAlpha")
 
     // Отрисовка
     ctx.fillRect(posWithOffset.x, posWithOffset.y, gridSize, gridSize)
     ctx.strokeRect(posWithOffset.x, posWithOffset.y, gridSize, gridSize)
 
     ctx.restore()
-  }
-
-  drawItemHover(ctx, camera, gridSize) {
-    
   }
 
   drawSelected(ctx, camera, gridSize) {

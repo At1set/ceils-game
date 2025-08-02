@@ -11,6 +11,10 @@ export default class GameField {
     Instance = this
   }
 
+  /**
+   * 
+   * @returns {GameField}
+   */
   static getInstance() {
     if (!Instance) throw new Error("GameField not initialized yet!")
     return Instance

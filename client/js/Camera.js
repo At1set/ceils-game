@@ -28,7 +28,7 @@ export default class Camera {
 
     const inputController = InputController.getInstance()
 
-    inputController.on("camera.dragStart", (point) => {
+    inputController.on("dragStart", (point) => {
       this.startDragPoint = point
       this.lastPosition = this.position.clone()
     })
@@ -41,7 +41,7 @@ export default class Camera {
       this.position.y = this.lastPosition.y + dy / this.scale
     })
 
-    inputController.on("camera.zoom", this.zoom.bind(this))
+    inputController.on("camera.zoom", ({ event }) => this.zoom(event.deltaY))
   }
 
   static getInstance() {

@@ -32,4 +32,9 @@ export default class Point {
   isNull() {
     return this.x === null || this.y === null
   }
+
+  set(x, y) {
+    this.x = x
+    this.y = y
+  }
 }

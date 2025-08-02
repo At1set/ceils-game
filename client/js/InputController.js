@@ -24,10 +24,14 @@ export default class InputController extends EventEmitter {
     canvas.addEventListener("mousedown", (e) => {
       this.state.isDragging = true
       const startDragPoint = new Point(e.clientX, e.clientY)
-      this.emit("camera.dragStart", startDragPoint)
+      this.emit("dragStart", startDragPoint)
     })
 
     window.addEventListener("mouseup", (e) => {
+      if (this.state.isDragging) {
+        const endDragPoint = new Point(e.clientX, e.clientY)
+        this.emit("dragEnd", endDragPoint)
+      }
       this.state.isDragging = false
     })
 
@@ -40,8 +44,7 @@ export default class InputController extends EventEmitter {
     })
 
     window.addEventListener("wheel", (e) => {
-      this.emit("camera.zoom", e.deltaY)
-      this.emit("player.move", e)
+      this.emit("camera.zoom", { event: e, state: this.state })
     })
   }
 }
