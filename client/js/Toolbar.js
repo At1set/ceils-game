@@ -1,5 +1,5 @@
-import GameObject from "./Placement/GameObject.js"
-import Cleaner from "./Tools/Cleaner.js"
+import Block from "./Placement/Block.js"
+import Cleaner from "./Placement/Cleaner.js"
 import SelectTool from "./Tools/Select.js"
 import EventEmitter from "./utils/EventEmitter.js"
 
@@ -36,9 +36,8 @@ export default class Toolbar extends EventEmitter {
       const allSlots = Array.from(toolbar.querySelectorAll(".slot"))
       allSlots.forEach((slot) => slot.classList.remove("_active"))
       clickedSlot.classList.add("_active")
-      if (clickedSlot !== allSlots[2]) this.emit("tool.switch", null)
-      if (clickedSlot === allSlots[0])
-        this.emit("item.switch", new GameObject())
+
+      if (clickedSlot === allSlots[0]) this.emit("item.switch", new Block())
       else if (clickedSlot === allSlots[1])
         this.emit("item.switch", new Cleaner())
       else if (clickedSlot === allSlots[2])

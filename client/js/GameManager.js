@@ -5,8 +5,8 @@ import GameField from "./GameField.js"
 import InputController from "./InputController.js"
 import Player from "./Player.js"
 import Toolbar from "./Toolbar.js"
-import GameObject from "./Placement/GameObject.js"
 import SelectTool from "./Tools/Select.js"
+import Block from "./Placement/Block.js"
 
 export default class GameManager {
   constructor(canvas) {
@@ -38,7 +38,7 @@ export default class GameManager {
     this.camera = new Camera(initialScale)
     this.canvasController = new Canvas(canvas, gridSize)
     this.gameField = new GameField()
-    this.player = new Player(new GameObject())
+    this.player = new Player(new Block())
   }
 
   setupGlobalEventListeners() {

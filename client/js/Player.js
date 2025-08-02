@@ -2,7 +2,7 @@ import Camera from "./Camera.js"
 import GameField from "./GameField.js"
 import GameObject from "./Placement//GameObject.js"
 import InputController from "./InputController.js"
-import Cleaner from "./Tools/Cleaner.js"
+import Cleaner from "./Placement/Cleaner.js"
 import Point from "./utils/Point.js"
 import Toolbar from "./Toolbar.js"
 import { States } from "./Placement/GameObject.js"
@@ -32,13 +32,30 @@ export default class Player {
       else this.placeItem(e)
     })
 
-    toolbar.on("item.switch", (item) => (this.selectedItem = item))
-    toolbar.on("tool.switch", (tool) => (this.selectedTool = tool))
+    toolbar.on("item.switch", this.setSelectedItem.bind(this))
+    toolbar.on("tool.switch", this.setSelectedTool.bind(this))
   }
 
   static getInstance() {
     if (!Instance) throw new Error("Player not initialized yet!")
     return Instance
+  }
+
+  setSelectedItem(item) {
+    if (!item) this.selectedItem = null
+
+    if (!(this.selectedItem instanceof item.constructor)) {
+      this.selectedItem = item
+      this.selectedTool = null
+    }
+  }
+
+  setSelectedTool(tool) {
+    if (!tool) this.selectedTool = null
+
+    if (!(this.selectedTool instanceof tool.constructor)) {
+      this.selectedTool = tool
+    }
   }
 
   onMouseMove({ event: e, state }) {
@@ -60,24 +77,18 @@ export default class Player {
 
     const itemCeil = gameField.getObjectAt(ceilPosition)
 
+    // @TODO делегировать логику наведения на новый блок и выход со старого в selectedTool и selectedItem
     // Player по-прежнемму остается на текущей клетке
     if (this.lastItemCeil === itemCeil) return
 
     // Player уходит с блока мышью
     if (this.lastItemCeil) {
-      if (this.lastItemCeil.state !== States.selected) {
-        this.lastItemCeil.state = States.default
-      }
-      this.lastItemCeil.drawOptions = null
+      this.selectedItem?.onBlockLeaving?.(this.lastItemCeil)
     }
 
     // Player перешел мышью на новый блок
     if (itemCeil && itemCeil.state !== States.selected) {
-      itemCeil.state = States.itemOver
-      if (this.selectedItem instanceof Cleaner) {
-        itemCeil.drawOptions =
-          this.selectedItem.getDrawOptionsOnItemHover(itemCeil)
-      }
+      this.selectedItem.onEnterOnBlock(itemCeil)
     }
     this.lastItemCeil = itemCeil
   }
@@ -96,7 +107,7 @@ export default class Player {
     selectedItem.move(worldPos)
     this.selectedItem?.place()
     gameField.addObject(selectedItem)
-    this.selectedItem = new GameObject(worldPos.x, worldPos.y)
+    this.selectedItem = this.selectedItem.clone()
     this.updateItemCeil(worldPos)
   }
 

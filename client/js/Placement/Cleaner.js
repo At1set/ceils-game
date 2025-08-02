@@ -1,4 +1,4 @@
-import GameObject from "../Placement/GameObject.js"
+import GameObject from "./GameObject.js"
 
 const HoverDrawOptions = {
   fillStyle: "red",
@@ -14,5 +14,7 @@ export default class Cleaner extends GameObject {
     return HoverDrawOptions
   }
 
-  draw() {}
+  draw() {
+    
+  }
 }
