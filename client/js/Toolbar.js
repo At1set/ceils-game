@@ -20,15 +20,8 @@ export default class Toolbar extends EventEmitter {
     return Instance
   }
 
-  setupEventListeners(canvas) {
+  setupEventListeners() {
     const { toolbar } = this
-
-    const slotSize = canvas.height / 10
-    toolbar.style.width = slotSize + "px"
-    Array.from(toolbar.querySelectorAll(".slot")).forEach((slot) => {
-      slot.style.width = slotSize - 2.2 + "px"
-      slot.style.height = slotSize + "px"
-    })
 
     toolbar.addEventListener("click", (e) => {
       const clickedSlot = e.target.closest(".slot")

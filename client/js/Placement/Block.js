@@ -1,4 +1,4 @@
-import Point from "/client/js/utils/Point.js"
+import Point from "../utils/Point.js"
 import GameObject, { States } from "./GameObject.js"
 
 const defaultDrawOptions = {

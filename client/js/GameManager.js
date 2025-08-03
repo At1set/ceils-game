@@ -33,7 +33,7 @@ export default class GameManager {
     this.inputController.setupEventListeners(canvas)
 
     this.toolbar = new Toolbar(toolbar)
-    this.toolbar.setupEventListeners(canvas)
+    this.toolbar.setupEventListeners()
 
     this.camera = new Camera(initialScale)
     this.canvasController = new Canvas(canvas, gridSize)
@@ -55,7 +55,7 @@ export default class GameManager {
 
     inputController.on("mouse.move", ({ event, state }) => {
       const playerWithSelectTool = player.selectedTool instanceof SelectTool
-      if (state.isDragging) return inputController.emit("player.action", event)
+      // if (state.isDragging) return inputController.emit("player.action", event)
       if (playerWithSelectTool || !state.isDragging) return
       inputController.emit("camera.dragging", event)
     })

@@ -1,4 +1,4 @@
-import Point from "/client/js/utils/Point.js"
+import Point from "../utils/Point.js"
 
 export const States = {
   default: "DEFAULT",
