@@ -12,7 +12,7 @@ export default class GameField {
   }
 
   /**
-   * 
+   *
    * @returns {GameField}
    */
   static getInstance() {
@@ -46,6 +46,10 @@ export default class GameField {
 
   removeObjectAt(point) {
     return this.occupiedCells.delete(this.#key(point))
+  }
+
+  removeObject(object) {
+    return this.occupiedCells.delete(this.#key(object.position))
   }
 
   clear() {

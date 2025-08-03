@@ -85,6 +85,24 @@ export default class Camera {
   }
 
   /**
+   * Получение абсолютных мировых координат (без учета смещения камеры) из координат на экране
+   * @param {Point} point screenpoint
+   * @returns {Point} absolute worldpoint
+   */
+  screenToWorldAbsolute(point) {
+    this.#validatePoint(point)
+    const canvas = Canvas.getInstance()
+
+    const cx = canvas.width / 2
+    const cy = canvas.height / 2
+
+    const worldX = (point.x - cx) / this.scale + cx
+    const worldY = (point.y - cy) / this.scale + cy
+
+    return new Point(worldX, worldY)
+  }
+
+  /**
    * Получение координат клетки по экранным координатам
    * @param {Point} point screenpoint
    * @returns {Point} gridpoint
@@ -155,7 +173,7 @@ export default class Camera {
   }
 
   /**
-   * Получение актуальных мировых координат, учитывая позицию камеры
+   * Получение абсолютных мировых координат, исключая позицию камеры
    * @param {Point} point worldpoint
    * @returns {Point} worldpoint
    */

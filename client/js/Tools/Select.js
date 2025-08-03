@@ -10,16 +10,19 @@ export default class SelectTool extends Tool {
     super()
     this.startDragPoint = new Point()
     this.position = new Point()
-    this.selectedCeils = []
+    this.selectedCeils = new Set()
 
     const inputController = InputController.getInstance()
 
     inputController.on("dragStart", this.handleDragStart)
     inputController.on("dragEnd", this.handleDragEnd)
+    inputController.on("keydown", this.handleKeyDown)
 
     this.delete = () => {
       inputController.off("dragStart", this.handleDragStart)
       inputController.off("dragEnd", this.handleDragEnd)
+      inputController.off("keydown", this.handleKeyDown)
+      this.unselectItems()
     }
   }
 
@@ -47,20 +50,42 @@ export default class SelectTool extends Tool {
     const yStart = Math.min(startCeil.y, endCeil.y)
     const yEnd = Math.max(startCeil.y, endCeil.y)
 
-    const selected = []
+    const selectedCeils = []
 
     for (let x = xStart; x <= xEnd; x++) {
       for (let y = yStart; y <= yEnd; y++) {
-        const ceil = gameField.getObjectAt(new Point(x, y))
-        if (ceil) {
-          selected.push(ceil)
-          ceil.state = States.selected
-        }
+        const worldPos = camera.ceilToWorld(new Point(x, y))
+        const ceil = gameField.getObjectAt(worldPos)
+        if (ceil) selectedCeils.push(ceil)
       }
     }
 
-    console.log(selected)
-    this.selectedCeils = selected
+    if (!selectedCeils.length) this.unselectItems()
+
+    selectedCeils.forEach((ceil) => {
+      ceil.state = States.selected
+      this.selectedCeils.add(ceil)
+    })
+    console.log(this.selectedCeils)
+  }
+
+  unselectItems() {
+    this.selectedCeils.forEach((ceil) => (ceil.state = States.default))
+    this.selectedCeils.clear()
+  }
+
+  handleKeyDown = (e) => {
+    if (e.key === "Delete") this.deleteSelectedItems()
+  }
+
+  deleteSelectedItems() {
+    if (!this.selectedCeils.size) return
+    const gameField = GameField.getInstance()
+
+    this.selectedCeils.forEach((ceil) => {
+      gameField.removeObject(ceil)
+    })
+    this.selectedCeils.clear()
   }
 
   onMouseMove({ event: e, state }) {
@@ -74,10 +99,8 @@ export default class SelectTool extends Tool {
     if (this.startDragPoint.isNull() || this.position.isNull()) return
 
     // Переводим в мировые координаты
-    const startWorld = camera.withOffset(
-      camera.screenToWorld(this.startDragPoint)
-    )
-    const endWorld = camera.withOffset(camera.screenToWorld(this.position))
+    const startWorld = camera.screenToWorldAbsolute(this.startDragPoint)
+    const endWorld = camera.screenToWorldAbsolute(this.position)
 
     // Строим всегда от левого верхнего угла
     const x = Math.min(startWorld.x, endWorld.x)
@@ -86,8 +109,8 @@ export default class SelectTool extends Tool {
     const height = Math.abs(endWorld.y - startWorld.y)
 
     ctx.save()
-    ctx.strokeStyle = "blue"
-    ctx.setLineDash([5, 5])
+    ctx.strokeStyle = "#381cf0"
+    ctx.lineWidth = 4
     ctx.strokeRect(x, y, width, height)
     ctx.restore()
   }

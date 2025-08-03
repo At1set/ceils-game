@@ -43,6 +43,7 @@ export default class Player {
 
     if (!(this.selectedItem instanceof item.constructor)) {
       this.selectedItem = item
+      this.selectedTool?.delete?.()
       this.selectedTool = null
     }
   }
@@ -54,7 +55,7 @@ export default class Player {
       this.selectedTool?.delete?.()
       this.selectedTool = tool
       this.selectedItem = null
-    }
+    } else tool?.delete?.()
   }
 
   onMouseMove(data) {
@@ -78,7 +79,6 @@ export default class Player {
 
     const itemCeil = gameField.getObjectAt(ceilPosition)
 
-    // @TODO делегировать логику наведения на новый блок и выход со старого в selectedTool и selectedItem
     // Player по-прежнемму остается на текущей клетке
     if (this.lastItemCeil === itemCeil) return
 
@@ -101,8 +101,10 @@ export default class Player {
     const worldPos = camera.ceilToWorld(ceilPos)
 
     selectedItem.move(worldPos)
+    const isItemPlaced = gameField.addObject(selectedItem)
+    if (!isItemPlaced) return
+
     this.selectedItem?.place()
-    gameField.addObject(selectedItem)
     this.selectedItem = this.selectedItem.clone()
     this.updateItemCeil(worldPos)
   }

@@ -55,6 +55,7 @@ export default class GameManager {
 
     inputController.on("mouse.move", ({ event, state }) => {
       const playerWithSelectTool = player.selectedTool instanceof SelectTool
+      if (state.isDragging) return inputController.emit("player.action", event)
       if (playerWithSelectTool || !state.isDragging) return
       inputController.emit("camera.dragging", event)
     })

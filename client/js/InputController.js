@@ -46,5 +46,9 @@ export default class InputController extends EventEmitter {
     window.addEventListener("wheel", (e) => {
       this.emit("camera.zoom", { event: e, state: this.state })
     })
+
+    window.addEventListener("keydown", (e) => {
+      this.emit("keydown", e)
+    })
   }
 }
