@@ -4,9 +4,10 @@ import Canvas from "./Canvas.js"
 import GameField from "./GameField.js"
 import InputController from "./InputController.js"
 import Player from "./Player.js"
-import Toolbar from "./Toolbar.js"
+import Toolbar, { Mods } from "./Toolbar.js"
 import SelectTool from "./Tools/Select.js"
 import Block from "./Placement/Block.js"
+import Point from "./utils/Point.js"
 
 export default class GameManager {
   constructor(canvas) {
@@ -27,13 +28,15 @@ export default class GameManager {
 
   setupGlobals() {
     const { canvas, gridSize, initialScale } = this
-    const toolbar = document.getElementById("toolbar")
+    const itemsbar = document.getElementById("itemsbar")
+    const toolsbar = document.getElementById("toolbar")
+    const modeSwitchingPanel = document.getElementById("modeSwitchingPanel")
 
     this.inputController = new InputController()
     this.inputController.setupEventListeners(canvas)
 
-    this.toolbar = new Toolbar(toolbar)
-    this.toolbar.setupEventListeners()
+    this.itemsbar = new Toolbar(itemsbar, toolsbar, modeSwitchingPanel)
+    this.itemsbar.setupEventListeners()
 
     this.camera = new Camera(initialScale)
     this.canvasController = new Canvas(canvas, gridSize)
@@ -42,12 +45,12 @@ export default class GameManager {
   }
 
   setupGlobalEventListeners() {
-    const { inputController, camera, canvasController, player } = this
+    const { inputController, itemsbar, camera, canvasController, player } = this
 
+    let startDragPoint = new Point()
     inputController.on("mouse.click", (e) => {
       const isMoved =
-        camera.lastPosition.x !== camera.position.x ||
-        camera.lastPosition.y !== camera.position.y
+        Point.getVectorLength(camera.lastPosition, camera.position) > 5
       if (isMoved) return
 
       inputController.emit("player.action", e)
@@ -55,7 +58,8 @@ export default class GameManager {
 
     inputController.on("mouse.move", ({ event, state }) => {
       const playerWithSelectTool = player.selectedTool instanceof SelectTool
-      // if (state.isDragging) return inputController.emit("player.action", event)
+      if (state.isDragging && itemsbar.mode === Mods.drawOnDragging)
+        return inputController.emit("player.action", event)
       if (playerWithSelectTool || !state.isDragging) return
       inputController.emit("camera.dragging", event)
     })
@@ -78,6 +82,7 @@ export default class GameManager {
         this.lastFpsUpdate = timestamp
       }
 
+      this.camera.update()
       this.canvasController.render()
       requestAnimationFrame(loop)
     }

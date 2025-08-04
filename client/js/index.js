@@ -6,7 +6,7 @@ window.onload = () => {
   canvas.width = window.document.body.clientWidth
   canvas.height = window.document.body.clientHeight
 
-  const gameManager = new GameManager(canvas, toolbar)
+  const gameManager = new GameManager(canvas)
   gameManager.init().startGameLoop()
 
   const customCursor = document.getElementById("custom-cursor")

@@ -37,4 +37,10 @@ export default class Point {
     this.x = x
     this.y = y
   }
+
+  static getVectorLength(pointStart, pointEnd) {
+    const dx = pointEnd.x - pointStart.x
+    const dy = pointEnd.y - pointStart.y
+    return Math.sqrt(dx * dx + dy * dy)
+  }
 }

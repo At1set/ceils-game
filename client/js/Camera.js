@@ -24,6 +24,12 @@ export default class Camera {
     this.lastPosition = new Point()
     this.startDragPoint = new Point()
 
+    this.targetScale = startScale
+    this.minScale = 1
+    this.maxScale = 5
+    this.zoomSpeed = 0.0015
+    this.zoomSmoothing = 0.05 // Чем меньше, тем медленнее/плавнее
+
     Instance = this
 
     const inputController = InputController.getInstance()
@@ -54,11 +60,19 @@ export default class Camera {
    * @param {number} deltaY
    */
   zoom(deltaY) {
-    if (deltaY > 0) {
-      this.scale = Math.max(1, this.scale - 0.1)
-    } else {
-      this.scale = Math.min(5, this.scale + 0.1)
-    }
+    const direction = Math.sign(deltaY)
+    const zoomFactor = 1 - direction * this.zoomSpeed * Math.abs(deltaY)
+
+    this.targetScale *= zoomFactor
+    this.targetScale = Math.max(
+      this.minScale,
+      Math.min(this.maxScale, this.targetScale)
+    )
+  }
+
+  update() {
+    // Плавное приближение
+    this.scale += (this.targetScale - this.scale) * this.zoomSmoothing    
   }
 
   #validatePoint(point) {

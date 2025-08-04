@@ -39,9 +39,9 @@ export default class Player {
   }
 
   setSelectedItem(item) {
-    if (!item) this.selectedItem = null
+    console.log(item)
 
-    if (!(this.selectedItem instanceof item.constructor)) {
+    if (!item || !(this.selectedItem instanceof item.constructor)) {
       this.selectedItem = item
       this.selectedTool?.delete?.()
       this.selectedTool = null
@@ -49,13 +49,13 @@ export default class Player {
   }
 
   setSelectedTool(tool) {
-    if (!tool) this.selectedTool = null
+    console.log(tool)
 
-    if (!(this.selectedTool instanceof tool.constructor)) {
+    if (!tool || !(this.selectedTool instanceof tool.constructor)) {
       this.selectedTool?.delete?.()
       this.selectedTool = tool
       this.selectedItem = null
-    } else tool?.delete?.()
+    }
   }
 
   onMouseMove(data) {

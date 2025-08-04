@@ -13,17 +13,27 @@
 <body>
   <div class="wrapper">
     <canvas id="root"></canvas>
-    <div id="toolbar">
-      <div class="slot _active"></div>
-      <div class="slot"><img src="./img/ToolBar/trashTool.svg" alt="delete tool"></div>
-      <div class="slot" style="text-align: center;"><img src="./img/ToolBar/selectTool.svg" alt="select tool"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <button class="slot toolbar__openMenu"></button>
+    <div id="itemsbar">
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <div class="itemsbar__slot"></div>
+      <button class="slot itemsbar__openMenu"></button>
+    </div>
+    <div class="rightPanel">
+      <div id="modeSwitchingPanel">
+        <div class="rightPanel__slot modeSwitchingPanel__slot"><img src="./img/cursor.svg" alt=""></div>
+        <div class="rightPanel__slot modeSwitchingPanel__slot"><img src="./img/cursor-pressed.svg" alt=""></div>
+      </div>
+      <div id="toolbar">
+        <div class="rightPanel__slot toolbar__slot"><img src="./img/ToolBar/trashTool.svg" alt="delete tool"></div>
+        <div class="rightPanel__slot toolbar__slot"><img src="./img/ToolBar/selectTool.svg" alt="select tool"></div>
+      </div>
     </div>
   </div>
   <div id="custom-cursor">
