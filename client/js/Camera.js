@@ -1,4 +1,5 @@
 import Canvas from "./Canvas.js"
+import GameObject from "./GameObjects/GameObject.js"
 import InputController from "./InputController.js"
 import Point from "./utils/Point.js"
 
@@ -9,7 +10,7 @@ let Instance = null
  *
  * Имеет методы, необходимые для получения координат игрового поля
  */
-export default class Camera {
+export default class Camera extends GameObject {
   /**
    * Создает/возвращает объект камеры
    * @param {number} startScale Начальный зум
@@ -18,6 +19,7 @@ export default class Camera {
 
   constructor(startScale) {
     if (Instance) return Instance
+    super()
 
     this.scale = startScale
     this.position = new Point(0, 0)
@@ -72,7 +74,7 @@ export default class Camera {
 
   update() {
     // Плавное приближение
-    this.scale += (this.targetScale - this.scale) * this.zoomSmoothing    
+    this.scale += (this.targetScale - this.scale) * this.zoomSmoothing
   }
 
   #validatePoint(point) {

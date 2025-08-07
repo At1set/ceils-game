@@ -1,7 +1,7 @@
 import Camera from "../Camera.js"
 import GameField from "../GameField.js"
 import InputController from "../InputController.js"
-import { States } from "../Placement/GameObject.js"
+import { States } from "../GameObjects/Block.js"
 import Point from "../utils/Point.js"
 import Tool from "./Tool.js"
 

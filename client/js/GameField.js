@@ -1,4 +1,4 @@
-import GameObject from "./Placement/GameObject.js"
+import GameObject from "./GameObjects/GameObject.js"
 
 let Instance = null
 
@@ -45,14 +45,21 @@ export default class GameField {
   }
 
   removeObjectAt(point) {
+    const removingObj = this.getObjectAt(point)
+    if (removingObj && typeof removingObj.destroy === "function")
+      removingObj.destroy()
     return this.occupiedCells.delete(this.#key(point))
   }
 
   removeObject(object) {
+    if (typeof object.destroy === "function") object.destroy()
     return this.occupiedCells.delete(this.#key(object.position))
   }
 
   clear() {
+    this.occupiedCells.forEach((obj) => {
+      if (typeof obj.destroy === "function") obj.destroy()
+    })
     this.occupiedCells.clear()
   }
 }

@@ -1,4 +1,4 @@
-import Block from "./Placement/Block.js"
+import Block from "./GameObjects/Block.js"
 import Cleaner from "./Tools/Cleaner.js"
 import SelectTool from "./Tools/Select.js"
 import EventEmitter from "./utils/EventEmitter.js"

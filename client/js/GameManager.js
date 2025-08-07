@@ -6,8 +6,9 @@ import InputController from "./InputController.js"
 import Player from "./Player.js"
 import Toolbar, { Mods } from "./Toolbar.js"
 import SelectTool from "./Tools/Select.js"
-import Block from "./Placement/Block.js"
+import Block from "./GameObjects/Block.js"
 import Point from "./utils/Point.js"
+import { Entitys } from "./GameObjects/Entity.js"
 
 export default class GameManager {
   constructor(canvas) {
@@ -71,9 +72,15 @@ export default class GameManager {
       inputController.emit("camera.dragging", event)
     })
 
-    this.events.on("fps.changed", (newFps) => (canvasController.fps = newFps))
-
     return this
+  }
+
+  updateAll(deltaTime) {
+    for (const entity of Entitys.values()) {
+      if (typeof entity.update === "function") {
+        entity.update(deltaTime)
+      }
+    }
   }
 
   startGameLoop() {
@@ -84,12 +91,12 @@ export default class GameManager {
       this.frameCount++
       if (timestamp - this.lastFpsUpdate > 1000) {
         this.fps = this.frameCount
-        this.events.emit("fps.changed", this.fps)
+        this.canvasController.fps = this.fps
         this.frameCount = 0
         this.lastFpsUpdate = timestamp
       }
 
-      this.camera.update()
+      this.updateAll(deltaTime)
       this.canvasController.render()
       requestAnimationFrame(loop)
     }
