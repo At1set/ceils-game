@@ -8,6 +8,20 @@ export default class Point {
     this.y = y
   }
 
+  static add(point1, point2) {
+    return new Point(point1.x + point2.x, point1.y + point2.y)
+  }
+
+  static minus(point1, point2) {
+    return new Point(point1.x - point2.x, point1.y - point2.y)
+  }
+
+  multiple(value) {
+    this.x *= value
+    this.y *= value
+    return this
+  }
+
   /**
    * Возвращает новую копию текущего объекта
    * @returns {Point}
@@ -36,11 +50,5 @@ export default class Point {
   set(x, y) {
     this.x = x
     this.y = y
-  }
-
-  static getVectorLength(pointStart, pointEnd) {
-    const dx = pointEnd.x - pointStart.x
-    const dy = pointEnd.y - pointStart.y
-    return Math.sqrt(dx * dx + dy * dy)
   }
 }

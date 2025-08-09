@@ -4,11 +4,14 @@ import InputController from "./InputController.js"
 import Cleaner from "./Tools/Cleaner.js"
 import Point from "./utils/Point.js"
 import Toolbar from "./Toolbar.js"
+import GameObject from "./GameObjects/GameObject.js"
+import InputManager from "./InputManager.js"
 
 let Instance = null
 
-export default class Player {
+export default class Player extends GameObject {
   constructor(startItem, startTool = null) {
+    super()
     if (Instance) return Instance
 
     this.selectedItem = startItem
@@ -72,6 +75,12 @@ export default class Player {
     selectedItem?.move?.(worldPos)
 
     this.updateItemCeil(worldPos)
+  }
+
+  update() {
+    const inputManager = InputManager.getInstance()
+    const { x, y } = inputManager.mouse
+    this.onMouseMove({ event: { clientX: x, clientY: y }, state: {} })
   }
 
   updateItemCeil(ceilPosition) {

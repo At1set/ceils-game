@@ -1,6 +1,9 @@
+import CameraMovementHandler from "./CameraMovementHandler/CameraMovementHandler.js"
 import Canvas from "./Canvas.js"
 import GameObject from "./GameObjects/GameObject.js"
 import InputController from "./InputController.js"
+import InputManager from "./InputManager.js"
+import { lerp, Vector2D } from "./Math/index.js"
 import Point from "./utils/Point.js"
 
 let Instance = null
@@ -21,33 +24,24 @@ export default class Camera extends GameObject {
     if (Instance) return Instance
     super()
 
+    this.movementHandler = new CameraMovementHandler(this)
+
+    this.inputController
+    this.inputManager
+
     this.scale = startScale
-    this.position = new Point(0, 0)
-    this.lastPosition = new Point()
-    this.startDragPoint = new Point()
+    this.position = new Vector2D(0, 0)
 
     this.targetScale = startScale
     this.minScale = 1
     this.maxScale = 5
     this.zoomSpeed = 0.0015
-    this.zoomSmoothing = 0.05 // Чем меньше, тем медленнее/плавнее
+    this.zoomSmoothing = 0.05
 
     Instance = this
 
     const inputController = InputController.getInstance()
-
-    inputController.on("dragStart", (point) => {
-      this.startDragPoint = point
-      this.lastPosition = this.position.clone()
-    })
-
-    inputController.on("camera.dragging", (e) => {
-      const dx = e.clientX - this.startDragPoint.x
-      const dy = e.clientY - this.startDragPoint.y
-
-      this.position.x = this.lastPosition.x + dx / this.scale
-      this.position.y = this.lastPosition.y + dy / this.scale
-    })
+    this.inputController = inputController
 
     inputController.on("camera.zoom", ({ event }) => this.zoom(event.deltaY))
   }
@@ -55,6 +49,10 @@ export default class Camera extends GameObject {
   static getInstance() {
     if (!Instance) throw new Error("Camera not initialized yet!")
     return Instance
+  }
+
+  awake() {
+    this.inputManager = InputManager.getInstance()
   }
 
   /**
@@ -72,9 +70,13 @@ export default class Camera extends GameObject {
     )
   }
 
-  update() {
+  changeZoom() {
     // Плавное приближение
     this.scale += (this.targetScale - this.scale) * this.zoomSmoothing
+  }
+
+  update(deltaTime) {
+    this.changeZoom()
   }
 
   #validatePoint(point) {

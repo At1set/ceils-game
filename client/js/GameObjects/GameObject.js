@@ -5,7 +5,11 @@ export default class GameObject extends Entity {
     super()
   }
   
+  awake() {}
+
   update() {}
+
+  fixedUpdate() {}
 
   draw(ctx, camera, gridSize) {}
 }
