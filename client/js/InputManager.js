@@ -8,14 +8,20 @@ export default class InputManager {
     if (Instance) return Instance
 
     this.pressedKeys = {}
+    this._prevPressedKeys = {}
+
     this.mouse = {
       position: new Point(0, 0),
-      _prevPosition: new Point(0, 0),
       left: false,
       right: false,
       middle: false,
     }
-    this.mousePositionDelta = Vector2D.zero
+    this._prevMouse = {
+      ...this.mouse,
+    }
+
+    this.mousePositionDelta = Vector2D.zero()
+    this.mouseDraggingDelta = Vector2D.zero()
     this.startDragPoint = new Point()
 
     this.#setupKeyboardListeners()
@@ -31,14 +37,20 @@ export default class InputManager {
 
   beforeUpdate() {
     this.mousePositionDelta = Vector2D.from2Points(
-      this.mouse._prevPosition,
+      this._prevMouse.position,
       this.mouse.position
     )
   }
 
   afterUpdate() {
-    const { x, y } = this.mouse.position
-    this.mouse._prevPosition.set(x, y)
+    this._prevMouse = {
+      ...this.mouse,
+      position: this.mouse.position.clone(),
+    }
+
+    this._prevPressedKeys = {
+      ...this.pressedKeys,
+    }
   }
 
   #setupKeyboardListeners() {
@@ -57,12 +69,19 @@ export default class InputManager {
     })
 
     window.addEventListener("mousedown", (e) => {
+      if (!e.target.closest("#root")) return
+
       this.#setMouseButton(e.button, true)
       this.startDragPoint.set(e.clientX, e.clientY)
+      this.mouseDraggingDelta.set(0, 0)
     })
 
     window.addEventListener("mouseup", (e) => {
       this.#setMouseButton(e.button, false)
+      this.mouseDraggingDelta = Vector2D.from2Points(
+        this.startDragPoint,
+        this.mouse.position
+      )
     })
   }
 
@@ -80,7 +99,30 @@ export default class InputManager {
     }
   }
 
+  // Проверка: клавиша нажата прямо в этом кадре
+  isKeyDown(key) {
+    key = key.toLowerCase()
+    return this.pressedKeys[key] && !this._prevPressedKeys[key]
+  }
+
+  // Проверка: клавиша отпущена прямо в этом кадре
+  isKeyUp(key) {
+    key = key.toLowerCase()
+    return !this.pressedKeys[key] && this._prevPressedKeys[key]
+  }
+
+  // Проверка: кнопка мыши нажата в этом кадре
+  isMouseDown(button = "left") {
+    return this.mouse[button] && !this._prevMouse[button]
+  }
+
+  // Проверка: кнопка мыши отпущена в этом кадре
+  isMouseUp(button = "left") {
+    return !this.mouse[button] && this._prevMouse[button]
+  }
+
   isKeyPressed(key) {
+    key = key.toLowerCase()
     return !!this.pressedKeys[key.toLowerCase()]
   }
 

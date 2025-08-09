@@ -1,17 +1,19 @@
 import GameObject from "../GameObjects/GameObject.js"
 import InputManager from "../InputManager.js"
 import { lerp, Vector2D } from "../Math/index.js"
+import Toolbar, { Mods } from "../Toolbar.js"
 
 export default class CameraMovementHandler extends GameObject {
   constructor(camera) {
     super()
     this.camera = camera
     this.inputManager
+    this.toolbar
 
     this.keyboardSensitive_Horizontal = 1
     this.keyboardSensitive_Vertical = 1
-    this.mouseSensitive_Horizontal = .2895
-    this.mouseSensitive_Vertical = .2895
+    this.mouseSensitive_Horizontal = 0.2895
+    this.mouseSensitive_Vertical = 0.2895
 
     this.movementSpeed = 1000
     this.smoothness = 50
@@ -21,6 +23,7 @@ export default class CameraMovementHandler extends GameObject {
 
   awake() {
     this.inputManager = InputManager.getInstance()
+    this.toolbar = Toolbar.getInstance()
   }
 
   update(deltaTime) {
@@ -69,13 +72,18 @@ export default class CameraMovementHandler extends GameObject {
   }
 
   getMouseInputDelta() {
-    const { inputManager, mouseSensitive_Horizontal, mouseSensitive_Vertical } =
-      this
+    const {
+      inputManager,
+      toolbar,
+      mouseSensitive_Horizontal,
+      mouseSensitive_Vertical,
+    } = this
 
     if (!this.isMoveWithMouse)
       this.isMoveWithMouse =
         inputManager.mousePositionDelta.len() >= 3 &&
-        inputManager.isMousePressed()
+        inputManager.isMousePressed() &&
+        toolbar.mode !== Mods.drawOnDragging
     if (!this.isMoveWithMouse) return Vector2D.zero()
     this.isMoveWithMouse = inputManager.isMousePressed()
 

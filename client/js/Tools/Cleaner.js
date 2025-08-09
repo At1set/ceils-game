@@ -1,4 +1,5 @@
 import Camera from "../Camera.js"
+import InputManager from "../InputManager.js"
 import Point from "../utils/Point.js"
 import Tool, { States } from "./Tool.js"
 
@@ -6,13 +7,14 @@ export default class Cleaner extends Tool {
   constructor(x = undefined, y = undefined) {
     super()
     this.position = new Point(x, y)
+    this.inputManager = InputManager.getInstance()
+    this.camera = Camera.getInstance()
   }
 
-  onMouseMove({ event: e, state }) {
-    if (state.isDragging) return
-    const camera = Camera.getInstance()
+  onMouseMove() {
+    const { inputManager, camera } = this
 
-    const mousePoint = new Point(e.clientX, e.clientY)
+    const mousePoint = inputManager.getMousePosition()
     const ceilPos = camera.screenToCeil(mousePoint)
     const worldPos = camera.ceilToWorld(ceilPos)
 
@@ -34,6 +36,4 @@ export default class Cleaner extends Tool {
 
     ctx.restore()
   }
-
-  delete() {}
 }

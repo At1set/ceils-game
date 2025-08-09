@@ -21,8 +21,4 @@ export default class Tool {
   }
 
   draw() {}
-
-  delete() {
-    throw new Error("you should implement method delete!")
-  }
 }

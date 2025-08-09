@@ -21,7 +21,6 @@ export default class GameManager {
 
   init() {
     this.setupGlobals()
-    this.setupGlobalEventListeners()
     this.canvasController.render()
     return this
   }
@@ -33,9 +32,7 @@ export default class GameManager {
     const modeSwitchingPanel = document.getElementById("modeSwitchingPanel")
 
     this.inputManager = new InputManager()
-
-    this.inputController = new InputController()
-    this.inputController.setupEventListeners(canvas)
+    this.InputController = new InputController()
 
     this.itemsbar = new Toolbar(itemsbar, toolsbar, modeSwitchingPanel)
     this.itemsbar.setupEventListeners()
@@ -44,36 +41,6 @@ export default class GameManager {
     this.canvasController = new Canvas(canvas, gridSize)
     this.gameField = new GameField()
     this.player = new Player(new Block())
-  }
-
-  setupGlobalEventListeners() {
-    const { inputController, itemsbar, camera, canvasController, player } = this
-
-    let startDragPoint = new Point()
-    inputController.on("mouse.click", (e) => {
-      const isMoved =
-        Point.getVectorLength(camera.lastPosition, camera.position) > 5
-      if (isMoved) return
-
-      inputController.emit("player.action", e)
-    })
-
-    inputController.on("mouse.move", ({ event, state }) => {
-      const playerWithSelectTool = player.selectedTool instanceof SelectTool
-      const playerHasItemOrTool = Boolean(
-        player.selectedItem || player.selectedTool
-      )
-      if (
-        state.isDragging &&
-        itemsbar.mode === Mods.drawOnDragging &&
-        playerHasItemOrTool
-      )
-        return inputController.emit("player.action", event)
-      if (playerWithSelectTool || !state.isDragging) return
-      inputController.emit("camera.dragging", event)
-    })
-
-    return this
   }
 
   startGameLoop() {

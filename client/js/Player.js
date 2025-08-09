@@ -1,11 +1,9 @@
 import Camera from "./Camera.js"
 import GameField from "./GameField.js"
-import InputController from "./InputController.js"
-import Cleaner from "./Tools/Cleaner.js"
-import Point from "./utils/Point.js"
-import Toolbar from "./Toolbar.js"
+import Toolbar, { Mods } from "./Toolbar.js"
 import GameObject from "./GameObjects/GameObject.js"
 import InputManager from "./InputManager.js"
+import Cleaner from "./Tools/Cleaner.js"
 
 let Instance = null
 
@@ -14,23 +12,19 @@ export default class Player extends GameObject {
     super()
     if (Instance) return Instance
 
+    this.inputManager
+    this.camera
+    this.gameField
+    this.toolbar
+
     this.selectedItem = startItem
     this.selectedTool = startTool
     this.lastItemCeil = null
 
     Instance = this
 
-    const inputController = InputController.getInstance()
     const toolbar = Toolbar.getInstance()
-
-    inputController.on("mouse.move", this.onMouseMove.bind(this))
-
-    inputController.on("player.action", (e) => {
-      if (this.selectedTool instanceof Cleaner) this.removeItem(e)
-      else this.placeItem(e)
-    })
-
-    inputController.on("camera.zoom", this.onMouseMove.bind(this))
+    this.toolbar = toolbar
 
     toolbar.on("item.switch", this.setSelectedItem.bind(this))
     toolbar.on("tool.switch", this.setSelectedTool.bind(this))
@@ -41,12 +35,18 @@ export default class Player extends GameObject {
     return Instance
   }
 
+  awake() {
+    this.inputManager = InputManager.getInstance()
+    this.camera = Camera.getInstance()
+    this.gameField = GameField.getInstance()
+  }
+
   setSelectedItem(item) {
     console.log(item)
 
     if (!item || !(this.selectedItem instanceof item.constructor)) {
-      this.selectedItem = item
       this.selectedTool?.delete?.()
+      this.selectedItem = item
       this.selectedTool = null
     }
   }
@@ -61,15 +61,11 @@ export default class Player extends GameObject {
     }
   }
 
-  onMouseMove(data) {
-    const { event: e, state } = data
-    const { selectedItem, selectedTool } = this
-    selectedTool?.onMouseMove?.(data)
-    if (state.isDragging) return
+  move(mousePosition) {
+    const { selectedItem, selectedTool, inputManager, camera } = this
+    selectedTool?.onMouseMove?.(mousePosition)
 
-    const camera = Camera.getInstance()
-
-    const mousePoint = new Point(e.clientX, e.clientY)
+    const mousePoint = inputManager.getMousePosition()
     const ceilPos = camera.screenToCeil(mousePoint)
     const worldPos = camera.ceilToWorld(ceilPos)
     selectedItem?.move?.(worldPos)
@@ -78,13 +74,22 @@ export default class Player extends GameObject {
   }
 
   update() {
-    const inputManager = InputManager.getInstance()
-    const { x, y } = inputManager.mouse
-    this.onMouseMove({ event: { clientX: x, clientY: y }, state: {} })
+    const { inputManager, toolbar } = this
+    this.move()
+
+    const isDoAction =
+      inputManager.isMouseUp() && inputManager.mouseDraggingDelta.len() < 3
+    const isDoActionOnMove =
+      inputManager.isMousePressed() && toolbar.mode === Mods.drawOnDragging
+
+    if (isDoAction || isDoActionOnMove) {
+      if (this.selectedTool instanceof Cleaner) this.removeItem()
+      else this.placeItem()
+    }
   }
 
   updateItemCeil(ceilPosition) {
-    const gameField = GameField.getInstance()
+    const { gameField } = this
 
     const itemCeil = gameField.getObjectAt(ceilPosition)
 
@@ -98,14 +103,11 @@ export default class Player extends GameObject {
     this.lastItemCeil = itemCeil
   }
 
-  placeItem(e) {
-    const { selectedItem } = this
-    if (!selectedItem) return
+  placeItem() {
+    if (!this.selectedItem) return
+    const { selectedItem, inputManager, camera, gameField } = this
 
-    const camera = Camera.getInstance()
-    const gameField = GameField.getInstance()
-
-    const mousePoint = new Point(e.clientX, e.clientY)
+    const mousePoint = inputManager.getMousePosition()
     const ceilPos = camera.screenToCeil(mousePoint)
     const worldPos = camera.ceilToWorld(ceilPos)
 
@@ -113,16 +115,16 @@ export default class Player extends GameObject {
     const isItemPlaced = gameField.addObject(selectedItem)
     if (!isItemPlaced) return
 
-    this.selectedItem?.place()
-    this.selectedItem = this.selectedItem.clone()
+    selectedItem?.place()
+    this.selectedItem = selectedItem.clone()
     this.updateItemCeil(worldPos)
   }
 
-  removeItem(e) {
-    const camera = Camera.getInstance()
-    const gameField = GameField.getInstance()
+  removeItem() {
+    if (!this.selectedTool) return
+    const { inputManager, camera, gameField } = this
 
-    const mousePoint = new Point(e.clientX, e.clientY)
+    const mousePoint = inputManager.getMousePosition()
     const ceilPos = camera.screenToCeil(mousePoint)
     const worldPos = camera.ceilToWorld(ceilPos)
 
