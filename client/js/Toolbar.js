@@ -53,11 +53,14 @@ export default class Toolbar extends EventEmitter {
       const isClickedSlotActive = clickedSlot.classList.contains("_active")
       allSlots.forEach((slot) => slot.classList.remove("_active"))
 
-      // Убираем все активные слоты с toolbar-а
-      toolbar__allSlots.forEach((slot) => slot.classList.remove("_active"))
-
       // Если нажали на активный слот повторно - делаем его не выбранным
       if (isClickedSlotActive) return this.emit("item.switch", null)
+
+      // Убираем активный слот с toolbar-а (если он есть)
+      const toolbar_activeSlot = toolbar__allSlots.filter((slot) =>
+        slot.classList.contains("_active")
+      )[0]
+      if (toolbar_activeSlot) changeTool(toolbar_activeSlot)
 
       // Привязка конкретным слотам к разным предметам
       if (clickedSlot === allSlots[0]) this.emit("item.switch", new Block())
@@ -68,6 +71,9 @@ export default class Toolbar extends EventEmitter {
 
     toolbar.addEventListener("click", (e) => {
       const clickedSlot = e.target.closest(".toolbar__slot")
+      changeTool(clickedSlot)
+    })
+    const changeTool = (clickedSlot) => {
       if (!clickedSlot) return
 
       const allSlots = toolbar__allSlots
@@ -78,19 +84,26 @@ export default class Toolbar extends EventEmitter {
       itemsbar__allSlots.forEach((slot) => slot.classList.remove("_active"))
 
       // Если нажали на активный слот повторно - делаем его не выбранным
-      if (isClickedSlotActive) return this.emit("tool.switch", null)
+      if (isClickedSlotActive) {
+        this.emit("tool.switch", null)
+        return changeMode(modeSwitchingPanel__allSlots[0])
+      }
 
       // Привязка конкретным слотам к разным предметам
       if (clickedSlot === allSlots[0]) this.emit("tool.switch", new Cleaner())
-      else if (clickedSlot === allSlots[1])
+      else if (clickedSlot === allSlots[1]) {
         this.emit("tool.switch", new SelectTool())
-      else this.emit("tool.switch", null)
+        changeMode(modeSwitchingPanel__allSlots[1])
+      } else this.emit("tool.switch", null)
 
       clickedSlot.classList.add("_active")
-    })
+    }
 
     modeSwitchingPanel.addEventListener("click", (e) => {
       const clickedSlot = e.target.closest(".modeSwitchingPanel__slot")
+      changeMode(clickedSlot)
+    })
+    const changeMode = (clickedSlot) => {
       if (!clickedSlot) return
 
       const allSlots = modeSwitchingPanel__allSlots
@@ -99,11 +112,10 @@ export default class Toolbar extends EventEmitter {
 
       // Привязка конкретным слотам к разным предметам
       if (clickedSlot === allSlots[0]) this.mode = Mods.default
-      else if (clickedSlot === allSlots[1])
-        this.mode = Mods.drawOnDragging
+      else if (clickedSlot === allSlots[1]) this.mode = Mods.drawOnDragging
       else this.mode = Mods.default
 
       clickedSlot.classList.add("_active")
-    })
+    }
   }
 }

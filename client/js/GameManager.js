@@ -1,13 +1,10 @@
 import EventEmitter from "./utils/EventEmitter.js"
-import Camera from "./Camera.js"
+import Camera from "./Camera/Camera.js"
 import Canvas from "./Canvas.js"
 import GameField from "./GameField.js"
-import InputController from "./InputController.js"
 import Player from "./Player.js"
-import Toolbar, { Mods } from "./Toolbar.js"
-import SelectTool from "./Tools/Select.js"
+import Toolbar from "./Toolbar.js"
 import Block from "./GameObjects/Block.js"
-import Point from "./utils/Point.js"
 import { Entitys } from "./GameObjects/Entity.js"
 import InputManager from "./InputManager.js"
 
@@ -16,7 +13,6 @@ export default class GameManager {
     this.canvas = canvas
     this.initialScale = 1
     this.events = new EventEmitter()
-    this.gridSize = 35
   }
 
   init() {
@@ -26,19 +22,18 @@ export default class GameManager {
   }
 
   setupGlobals() {
-    const { canvas, gridSize, initialScale } = this
+    const { canvas, initialScale } = this
     const itemsbar = document.getElementById("itemsbar")
     const toolsbar = document.getElementById("toolbar")
     const modeSwitchingPanel = document.getElementById("modeSwitchingPanel")
 
     this.inputManager = new InputManager()
-    this.InputController = new InputController()
 
     this.itemsbar = new Toolbar(itemsbar, toolsbar, modeSwitchingPanel)
     this.itemsbar.setupEventListeners()
 
     this.camera = new Camera(initialScale)
-    this.canvasController = new Canvas(canvas, gridSize)
+    this.canvasController = new Canvas(canvas)
     this.gameField = new GameField()
     this.player = new Player(new Block())
   }

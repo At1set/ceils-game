@@ -1,4 +1,4 @@
-import Camera from "../Camera.js"
+import Camera from "../Camera/Camera.js"
 import InputManager from "../InputManager.js"
 import Point from "../utils/Point.js"
 import Tool, { States } from "./Tool.js"

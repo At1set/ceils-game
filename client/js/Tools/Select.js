@@ -1,6 +1,5 @@
-import Camera from "../Camera.js"
+import Camera from "../Camera/Camera.js"
 import GameField from "../GameField.js"
-import InputController from "../InputController.js"
 import { States } from "../GameObjects/Block.js"
 import Point from "../utils/Point.js"
 import Tool from "./Tool.js"
@@ -11,29 +10,29 @@ export default class SelectTool extends Tool {
     this.startDragPoint = new Point()
     this.position = new Point()
     this.selectedCeils = new Set()
-
-    const inputController = InputController.getInstance()
-
-    inputController.on("dragStart", this.handleDragStart)
-    inputController.on("dragEnd", this.handleDragEnd)
-    inputController.on("keydown", this.handleKeyDown)
-
-    this.delete = () => {
-      inputController.off("dragStart", this.handleDragStart)
-      inputController.off("dragEnd", this.handleDragEnd)
-      inputController.off("keydown", this.handleKeyDown)
-      this.unselectItems()
-    }
   }
 
-  handleDragStart = (point) => {
-    this.startDragPoint = point
+  onMouseDown({ screenPoint }) {
+    this.startDragPoint.set(screenPoint.x, screenPoint.y)
   }
 
-  handleDragEnd = (point) => {
+  onMouseUp() {
     this.selectItems()
     this.startDragPoint.set(null, null)
     this.position.set(null, null)
+  }
+
+  onMouseMove({ screenPoint, isDragging }) {
+    if (!isDragging) return
+    this.position.set(screenPoint.x, screenPoint.y)
+  }
+
+  onKeyDown(e) {
+    if (e.key === "delete") this.deleteSelectedItems()
+  }
+
+  delete() {
+    this.unselectItems()
   }
 
   selectItems() {
@@ -66,16 +65,11 @@ export default class SelectTool extends Tool {
       ceil.state = States.selected
       this.selectedCeils.add(ceil)
     })
-    console.log(this.selectedCeils)
   }
 
   unselectItems() {
     this.selectedCeils.forEach((ceil) => (ceil.state = States.default))
     this.selectedCeils.clear()
-  }
-
-  handleKeyDown = (e) => {
-    if (e.key === "Delete") this.deleteSelectedItems()
   }
 
   deleteSelectedItems() {
@@ -88,21 +82,12 @@ export default class SelectTool extends Tool {
     this.selectedCeils.clear()
   }
 
-  onMouseMove({ event: e, state }) {
-    if (!state.isDragging) return
-
-    this.position.x = e.clientX
-    this.position.y = e.clientY
-  }
-
   draw(ctx, camera) {
     if (this.startDragPoint.isNull() || this.position.isNull()) return
 
-    // Переводим в мировые координаты
     const startWorld = camera.screenToWorldAbsolute(this.startDragPoint)
     const endWorld = camera.screenToWorldAbsolute(this.position)
 
-    // Строим всегда от левого верхнего угла
     const x = Math.min(startWorld.x, endWorld.x)
     const y = Math.min(startWorld.y, endWorld.y)
     const width = Math.abs(endWorld.x - startWorld.x)

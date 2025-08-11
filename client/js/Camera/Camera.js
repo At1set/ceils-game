@@ -1,10 +1,9 @@
-import CameraMovementHandler from "./CameraMovementHandler/CameraMovementHandler.js"
-import Canvas from "./Canvas.js"
-import GameObject from "./GameObjects/GameObject.js"
-import InputController from "./InputController.js"
-import InputManager from "./InputManager.js"
-import { lerp, Vector2D } from "./Math/index.js"
-import Point from "./utils/Point.js"
+import CameraMovementHandler from "./CameraMovementHandler.js"
+import Canvas from "../Canvas.js"
+import GameObject from "../GameObjects/GameObject.js"
+import InputManager from "../InputManager.js"
+import { Vector2D } from "../Math/index.js"
+import Point from "../utils/Point.js"
 
 let Instance = null
 
@@ -26,7 +25,6 @@ export default class Camera extends GameObject {
 
     this.movementHandler = new CameraMovementHandler(this)
 
-    this.inputController
     this.inputManager
 
     this.scale = startScale
@@ -39,11 +37,6 @@ export default class Camera extends GameObject {
     this.zoomSmoothing = 0.05
 
     Instance = this
-
-    const inputController = InputController.getInstance()
-    this.inputController = inputController
-
-    inputController.on("camera.zoom", ({ event }) => this.zoom(event.deltaY))
   }
 
   static getInstance() {

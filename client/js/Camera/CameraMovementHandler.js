@@ -2,6 +2,7 @@ import GameObject from "../GameObjects/GameObject.js"
 import InputManager from "../InputManager.js"
 import { lerp, Vector2D } from "../Math/index.js"
 import Toolbar, { Mods } from "../Toolbar.js"
+import GameOptions from "../GameOptions.js"
 
 export default class CameraMovementHandler extends GameObject {
   constructor(camera) {
@@ -28,11 +29,15 @@ export default class CameraMovementHandler extends GameObject {
 
   update(deltaTime) {
     const inputDelta = this.getInputDelta()
-    this.move(deltaTime, inputDelta)
+
+    const isCameraStatic =
+      (inputDelta.x === 0 && inputDelta.y === 0) ||
+      this.toolbar.mode === Mods.drawOnDragging
+
+    if (!isCameraStatic) this.move(deltaTime, inputDelta)
   }
 
   move(deltaTime, inputDelta) {
-    if (inputDelta.x === 0 && inputDelta.y === 0) return
     const { camera, movementSpeed, smoothness } = this
 
     const speed = movementSpeed
@@ -81,7 +86,8 @@ export default class CameraMovementHandler extends GameObject {
 
     if (!this.isMoveWithMouse)
       this.isMoveWithMouse =
-        inputManager.mousePositionDelta.len() >= 3 &&
+        inputManager.mousePositionDelta.len() >=
+          GameOptions.cameraMovementStartThreshold &&
         inputManager.isMousePressed() &&
         toolbar.mode !== Mods.drawOnDragging
     if (!this.isMoveWithMouse) return Vector2D.zero()

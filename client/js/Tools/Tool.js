@@ -6,9 +6,10 @@ export const States = {
 export default class Tool {
   constructor() {}
 
-  onMouseMove({ event, state }) {
-    throw new Error("you should implement method onMouseMove!")
-  }
+  onMouseDown() {}
+  onMouseUp() {}
+  onMouseMove() {}
+  onKeyDown() {}
 
   movedOnNextBlock(from, to) {
     this.onBlockHover(to)

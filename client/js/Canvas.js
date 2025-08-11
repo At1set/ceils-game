@@ -1,5 +1,6 @@
-import Camera from "./Camera.js"
+import Camera from "./Camera/Camera.js"
 import GameField from "./GameField.js"
+import GameOptions from "./GameOptions.js"
 import Player from "./Player.js"
 
 let Instance = null
@@ -8,11 +9,11 @@ let Instance = null
  * Выполняет роль отрисовки графики игры
  */
 export default class Canvas {
-  constructor(canvas, gridSize) {
+  constructor(canvas) {
     if (Instance) return Instance
 
     this.canvas = canvas
-    this.gridSize = gridSize
+    this.gridSize = GameOptions.gridSize
     this.ctx = canvas.getContext("2d")
     this.height = canvas.height
     this.width = canvas.width

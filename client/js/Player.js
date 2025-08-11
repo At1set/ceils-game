@@ -1,9 +1,10 @@
-import Camera from "./Camera.js"
+import Camera from "./Camera/Camera.js"
 import GameField from "./GameField.js"
 import Toolbar, { Mods } from "./Toolbar.js"
 import GameObject from "./GameObjects/GameObject.js"
 import InputManager from "./InputManager.js"
 import Cleaner from "./Tools/Cleaner.js"
+import GameOptions from "./GameOptions.js"
 
 let Instance = null
 
@@ -61,31 +62,56 @@ export default class Player extends GameObject {
     }
   }
 
-  move(mousePosition) {
-    const { selectedItem, selectedTool, inputManager, camera } = this
-    selectedTool?.onMouseMove?.(mousePosition)
+  update() {
+    const { inputManager, selectedTool, selectedItem, camera } = this
 
-    const mousePoint = inputManager.getMousePosition()
-    const ceilPos = camera.screenToCeil(mousePoint)
+    const screenPoint = inputManager.getMousePosition()
+    const ceilPos = camera.screenToCeil(screenPoint)
     const worldPos = camera.ceilToWorld(ceilPos)
-    selectedItem?.move?.(worldPos)
+    const isDragging = inputManager.isMousePressed()
+    const isMouseMoved = inputManager.mousePositionDelta.len() > 0
 
-    this.updateItemCeil(worldPos)
+    const mouseInputData = {
+      screenPoint,
+      ceilPos,
+      worldPos,
+      isDragging,
+      isMouseMoved,
+    }
+
+    if (inputManager.isMouseDown()) {
+      selectedTool?.onMouseDown?.(mouseInputData)
+    }
+    if (inputManager.isMouseUp()) {
+      selectedTool?.onMouseUp?.(mouseInputData)
+      if (
+        inputManager.mouseDraggingDelta.len() <
+        GameOptions.cameraMovementStartThreshold
+      )
+        this.doAction()
+    }
+    if (isMouseMoved) {
+      selectedTool?.onMouseMove?.(mouseInputData)
+      selectedItem?.move(worldPos)
+      if (
+        this.toolbar.mode === Mods.drawOnDragging &&
+        inputManager.isMousePressed()
+      )
+        this.doAction()
+      else this.updateItemCeil(ceilPos)
+    }
+
+    for (let key in inputManager.pressedKeys) {
+      if (inputManager.isKeyDown(key)) {
+        selectedTool?.onKeyDown?.({ key })
+      }
+    }
   }
 
-  update() {
-    const { inputManager, toolbar } = this
-    this.move()
-
-    const isDoAction =
-      inputManager.isMouseUp() && inputManager.mouseDraggingDelta.len() < 3
-    const isDoActionOnMove =
-      inputManager.isMousePressed() && toolbar.mode === Mods.drawOnDragging
-
-    if (isDoAction || isDoActionOnMove) {
-      if (this.selectedTool instanceof Cleaner) this.removeItem()
-      else this.placeItem()
-    }
+  doAction() {
+    const { selectedItem, selectedTool } = this
+    if (selectedTool instanceof Cleaner) this.removeItem()
+    else if (selectedItem) this.placeItem()
   }
 
   updateItemCeil(ceilPosition) {
@@ -104,7 +130,6 @@ export default class Player extends GameObject {
   }
 
   placeItem() {
-    if (!this.selectedItem) return
     const { selectedItem, inputManager, camera, gameField } = this
 
     const mousePoint = inputManager.getMousePosition()
@@ -121,7 +146,6 @@ export default class Player extends GameObject {
   }
 
   removeItem() {
-    if (!this.selectedTool) return
     const { inputManager, camera, gameField } = this
 
     const mousePoint = inputManager.getMousePosition()
