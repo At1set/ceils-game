@@ -95,7 +95,7 @@ export default class SelectTool extends Tool {
 
     ctx.save()
     ctx.strokeStyle = "#381cf0"
-    ctx.lineWidth = 4
+    ctx.lineWidth = 4 / camera.scale
     ctx.strokeRect(x, y, width, height)
     ctx.restore()
   }

@@ -2,7 +2,7 @@ import CameraMovementHandler from "./CameraMovementHandler.js"
 import Canvas from "../Canvas.js"
 import GameObject from "../GameObjects/GameObject.js"
 import InputManager from "../InputManager.js"
-import { Vector2D } from "../Math/index.js"
+import { Vector2D, smoothDamp } from "../Math/index.js"
 import Point from "../utils/Point.js"
 
 let Instance = null
@@ -27,14 +27,16 @@ export default class Camera extends GameObject {
 
     this.inputManager
 
-    this.scale = startScale
     this.position = new Vector2D(0, 0)
 
+    this.scale = startScale
     this.targetScale = startScale
+    this.scaleVelocity = { value: 0 } // теперь будем хранить скорость для SmoothDamp
+
     this.minScale = 1
     this.maxScale = 5
     this.zoomSpeed = 0.0015
-    this.zoomSmoothing = 0.05
+    this.zoomSmoothTime = 0.2 // сек
 
     Instance = this
   }
@@ -63,13 +65,25 @@ export default class Camera extends GameObject {
     )
   }
 
-  changeZoom() {
-    // Плавное приближение
-    this.scale += (this.targetScale - this.scale) * this.zoomSmoothing
+  changeZoom(deltaTime) {
+    const scrollDelta = this.inputManager.getMouseScrollDelta()
+    if (scrollDelta) this.zoom(scrollDelta)
+
+    // Плавный переход через SmoothDamp
+    this.scale = smoothDamp(
+      this.scale,
+      this.targetScale,
+      this.scaleVelocity,
+      this.zoomSmoothTime,
+      deltaTime,
+      1000 // maxSpeed
+    )
   }
 
   update(deltaTime) {
-    this.changeZoom()
+    this.changeZoom(deltaTime)
+    // console.log(this.);
+    
   }
 
   #validatePoint(point) {

@@ -70,6 +70,7 @@ export default class Player extends GameObject {
     const worldPos = camera.ceilToWorld(ceilPos)
     const isDragging = inputManager.isMousePressed()
     const isMouseMoved = inputManager.mousePositionDelta.len() > 0
+    const mouseScrollDelta = inputManager.getMouseScrollDelta()
 
     const mouseInputData = {
       screenPoint,
@@ -90,7 +91,7 @@ export default class Player extends GameObject {
       )
         this.doAction()
     }
-    if (isMouseMoved) {
+    if (isMouseMoved || mouseScrollDelta) {
       selectedTool?.onMouseMove?.(mouseInputData)
       selectedItem?.move(worldPos)
       if (
@@ -98,7 +99,7 @@ export default class Player extends GameObject {
         inputManager.isMousePressed()
       )
         this.doAction()
-      else this.updateItemCeil(ceilPos)
+      else this.updateItemCeil(worldPos)
     }
 
     for (let key in inputManager.pressedKeys) {
@@ -114,10 +115,10 @@ export default class Player extends GameObject {
     else if (selectedItem) this.placeItem()
   }
 
-  updateItemCeil(ceilPosition) {
+  updateItemCeil(worldPos) {
     const { gameField } = this
 
-    const itemCeil = gameField.getObjectAt(ceilPosition)
+    const itemCeil = gameField.getObjectAt(worldPos)
 
     // Player по-прежнемму остается на текущей клетке
     if (this.lastItemCeil === itemCeil) return

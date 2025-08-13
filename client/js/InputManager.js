@@ -15,6 +15,7 @@ export default class InputManager {
       left: false,
       right: false,
       middle: false,
+      deltaY: 0,
     }
     this._prevMouse = {
       ...this.mouse,
@@ -47,6 +48,7 @@ export default class InputManager {
       ...this.mouse,
       position: this.mouse.position.clone(),
     }
+    this.mouse.deltaY = 0
 
     this._prevPressedKeys = {
       ...this.pressedKeys,
@@ -82,6 +84,10 @@ export default class InputManager {
         this.startDragPoint,
         this.mouse.position
       )
+    })
+
+    window.addEventListener("wheel", (e) => {
+      this.mouse.deltaY = e.deltaY
     })
   }
 
@@ -132,5 +138,9 @@ export default class InputManager {
 
   getMousePosition() {
     return this.mouse.position
+  }
+
+  getMouseScrollDelta() {
+    return this.mouse.deltaY
   }
 }

@@ -11,13 +11,7 @@ export default class Cleaner extends Tool {
     this.camera = Camera.getInstance()
   }
 
-  onMouseMove() {
-    const { inputManager, camera } = this
-
-    const mousePoint = inputManager.getMousePosition()
-    const ceilPos = camera.screenToCeil(mousePoint)
-    const worldPos = camera.ceilToWorld(ceilPos)
-
+  onMouseMove({ worldPos }) {
     this.position = worldPos
   }
 

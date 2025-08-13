@@ -4,7 +4,9 @@ export const States = {
 }
 
 export default class Tool {
-  constructor() {}
+  constructor() {
+    this.state = States.default
+  }
 
   onMouseDown() {}
   onMouseUp() {}
@@ -12,6 +14,7 @@ export default class Tool {
   onKeyDown() {}
 
   movedOnNextBlock(from, to) {
+    // console.log("Moved on new block", to)
     this.onBlockHover(to)
   }
 

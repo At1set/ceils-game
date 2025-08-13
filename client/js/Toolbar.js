@@ -106,6 +106,9 @@ export default class Toolbar extends EventEmitter {
     const changeMode = (clickedSlot) => {
       if (!clickedSlot) return
 
+      // Запрещаем менять режимы для selectTool
+      if (toolbar__allSlots[1].classList.contains("_active")) return
+
       const allSlots = modeSwitchingPanel__allSlots
       const isClickedSlotActive = clickedSlot.classList.contains("_active")
       allSlots.forEach((slot) => slot.classList.remove("_active"))
