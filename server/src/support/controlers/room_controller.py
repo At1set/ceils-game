@@ -15,28 +15,28 @@ class CreateRoomResponse(BaseModel):
     message: str
 
 class Player:
-    name: str
-    ws: WebSocket
+    def __init__(self, name: str, ws: WebSocket):
+        self.name = name
+        self.ws = ws
 
 class Room:
-    def __init__(self, name, password):
-        self.name = name
-        self.password = password
-        self.players = []
-        self.objects = []
+    def __init__(self, name: str, password: str):
+        self.name: str = name
+        self.password: str = password
+        self.players: list[Player] = []
+        self.objects: dict[str, object] = {}
 
-    name: str
-    password: str
-    players: list[Player]
-    objects: map
+    async def broadcast(self, message: str, sender: Player):
+        for p in self.players:
+            if p == sender:
+                continue
+            await p.ws.send_text(message)
 
 rooms: list[Room] = []
 router = APIRouter(prefix="/rooms")
 
-
-
-@router.post("/create",response_model=CreateRoomResponse, status_code=201)
-async def create_room(name: str, password: str) -> bool:
+@router.post("/create", response_model=CreateRoomResponse, status_code=201)
+async def create_room(name: str, password: str):
     if any(room.name == name for room in rooms):
         raise HTTPException(
             status_code=403,
@@ -59,8 +59,12 @@ async def list_rooms():
 async def websocket_endpoint(
     websocket: WebSocket,
     room_name: str,
-    player_name: str
+    player_name: str,
+    password: str
 ):
+    room = None
+    player = None
+    
     try:
         await websocket.accept()
         
@@ -71,55 +75,90 @@ async def websocket_endpoint(
             logger.error(f"Комната {room_name} не найдена")
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
-            
+        
         logger.debug(f"Найдена комната: {room.name}")
         
-        # Проверяем существующего игрока
+        if room.password != password: 
+            logger.error(f"Неверный пароль от комнаты: {room_name}")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
         if any(p.name == player_name for p in room.players):
             logger.warning(f"Игрок {player_name} уже существует в комнате {room_name}")
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
             
-        # Создаем и добавляем нового игрока
-        player = Player()
-        player.name = player_name
-        player.ws = websocket
+        player = Player(name=player_name, ws=websocket)
         room.players.append(player)
         logger.info(f"Игрок {player_name} добавлен в комнату {room_name}")
 
-        objects = []
-        for obj in room.objects:
-            objects += obj
-
         try:
             join_message = {
-            "event": "join",
-            "data": {
-            "room": room_name,
-            "username": player_name,
-            "objects": objects,
-            "sender": "server"
-            }}
+                "event": "join",
+                "data": {
+                    "room": room_name,
+                    "username": player_name,
+                    "objects": room.objects,
+                    "sender": "server"
+                }
+            }
+            
+            join_event = {
+                "event": "player_joined",
+                "data": {
+                    "room": room_name,
+                    "username": player_name,
+                    "sender": "server"
+                }
+            }
+
             await websocket.send_text(json.dumps(join_message))
+            await room.broadcast(json.dumps(join_event), player)
+            
             while True:
                 data = await websocket.receive_text()
+                logger.debug(f"Получено сообщение: {data}")
+                
                 try:
                     message = json.loads(data)
                 except json.JSONDecodeError:
-                    print("Ошибка: Невалидный JSON")
+                    logger.error("Ошибка: Невалидный JSON")
                     continue
-                message["sender"] = player.name
-                
-                updated_data = json.dumps(message)
 
-                for p in room.players:
-                    if p == player:
-                        continue
-                    await p.ws.send_text(updated_data)
+                message["sender"] = player_name
+
+                if message["event"] == "placeBlock":
+                    x = message["data"]["x"]
+                    y = message["data"]["y"]
+                    item = message["data"]["item"]
+                    room.objects[f"{x}_{y}"] = item
+
+                if message["event"] == "removeBlock":
+                    x = message["data"]["x"]
+                    y = message["data"]["y"]
+                    if f"{x}_{y}" in room.objects:
+                        del room.objects[f"{x}_{y}"]
+
+                await room.broadcast(json.dumps(message), player)
+                
         except Exception as e:
             logger.error(f"Ошибка в соединении: {str(e)}")
+            
+    except Exception as e:
+        logger.error(f"Общая ошибка WebSocket: {str(e)}")
+        
     finally:
-        # Удаляем игрока при отключении
-        if room and 'player' in locals():
+        if room and player:
             room.players = [p for p in room.players if p.name != player_name]
             logger.info(f"Игрок {player_name} удален из комнаты {room_name}")
+
+            if room.players:
+                leave_event = {
+                    "event": "player_left",
+                    "data": {
+                        "room": room_name,
+                        "username": player_name,
+                        "sender": "server"
+                    }
+                }
+                await room.broadcast(json.dumps(leave_event), player)
